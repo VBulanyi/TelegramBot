@@ -50,12 +50,6 @@ public class Bot extends TelegramLongPollingBot {
                 case "/start":
                     sendMsg(message, "Привет!!");
                     break;
-                case "Ты кто?":
-                    sendMsg(message, "Вова!!");
-                    break;
-                case "Что ты делаешь?":
-                    sendMsg(message, "ЛЮБЛЮ ОКСАНУ!!");
-                    break;
                 default:
                     try {
                         sendMsg(message, Weather.getWeather(message.getText(), model));
