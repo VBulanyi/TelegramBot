@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +19,11 @@ public class Bot extends TelegramLongPollingBot {
 
 
     public static void main(String[] args) {
-     /*
+
         System.getProperties().put("proxySet", "true");
-        System.getProperties().put("socksProxyHost", "145.239.93.148");
+        System.getProperties().put("socksProxyHost", "74.115.25.72");
         System.getProperties().put("socksProxyPort", "1080");
-*/
+
         ApiContextInitializer.init();
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
 
@@ -38,18 +39,50 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         Model model = new Model();
+
         Message message = update.getMessage();
         if (message != null && message.hasText()) {
             switch (message.getText()) {
-                case "/help":
-                    sendMsg(message, "Что я могу для Вас сделать?");
+
+//                case "unsubscribe":
+//                    sendMsg(message, "От какого города отписаться?");
+//                    break;
+//
+//                    /*            // Удаление записи с id = 8
+//            dbHandler.deleteProduct(8);
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//}
+
+                case "subscribe":
+                    sendMsg(message, "Введите город!");
+
+
+                    //
+                    try {
+                        message.getText();
+                        DbHandler dbHandler = DbHandler.getInstance();
+                        dbHandler.addSubscribtion(new Subscribtion(message.getChatId().toString(), update.getMessage().toString()));
+                            List<Subscribtion> subscribtions = dbHandler.getAllSubscribtions();
+                            for(Subscribtion subscribtion : subscribtions) {
+                               try {
+                                   sendMsg(message, Weather.getWeather(message.getText(), model));
+
+                               }
+                               catch (Exception e){
+                                   e.printStackTrace();
+                               }
+                            }
+                    } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+
+
                     break;
-                case "/settings":
-                    sendMsg(message, "Что настроить?");
-                    break;
-                case "/start":
-                    sendMsg(message, "Привет!!");
-                    break;
+
+
                 default:
                     try {
                         sendMsg(message, Weather.getWeather(message.getText(), model));
@@ -57,13 +90,12 @@ public class Bot extends TelegramLongPollingBot {
                         sendMsg(message, "Город не найден");
                     }
             }
-
-        }//else   sendMsg(message, "Я Вас не понимаю");
-
+        }
     }
 
+
     //Клавиатура
-    public void setButtons(SendMessage sendMessage) {
+    private void setButtons(SendMessage sendMessage) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         //Связать клавиатуру и сообщение
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
@@ -77,8 +109,8 @@ public class Bot extends TelegramLongPollingBot {
 //Первый ряд кнопок
         KeyboardRow keyboardFirstRow = new KeyboardRow();
 
-        keyboardFirstRow.add(new KeyboardButton("Ты кто?"));
-        keyboardFirstRow.add(new KeyboardButton("Что ты делаешь?"));
+        keyboardFirstRow.add(new KeyboardButton("subscribe"));
+        keyboardFirstRow.add(new KeyboardButton("unsubscribe"));
 // Добавить кнопки в список клавиатуры
         keyboardRowList.add(keyboardFirstRow);
         replyKeyboardMarkup.setKeyboard(keyboardRowList);

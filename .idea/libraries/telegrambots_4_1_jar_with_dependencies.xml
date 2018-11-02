@@ -2,8 +2,11 @@
   <library name="telegrambots-4.1-jar-with-dependencies">
     <CLASSES>
       <root url="jar://$USER_HOME$/Downloads/telegrambots-4.1-jar-with-dependencies.jar!/" />
+      <root url="jar://C:/Program Files/Java/jdk1.8.0_181/jre/lib/ext/sqlite-jdbc/sqlite-jdbc-3.7.2.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="jar://C:/Program Files/Java/jdk1.8.0_181/jre/lib/ext/sqlite-jdbc/sqlite-jdbc-3.7.2.jar!/" />
+    </SOURCES>
   </library>
 </component>

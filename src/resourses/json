@@ -24,7 +24,7 @@ http://api.openweathermap.org/data/2.5/weather?q=London
         {
             "id": 500,
             "main": "Rain",
-            "description": "light rain",
+            "describtiion": "light rain",
             "icon": "10n"
         }
     ],
@@ -71,7 +71,7 @@ URL is
 http://openweathermap.org/img/w/10d.png
 
 Icon list
-Day icon	Night icon	Description
+Day icon	Night icon	Describtiion
 01d.png  	01n.png  	clear sky
 02d.png  	02n.png  	few clouds
 03d.png  	03n.png  	scattered clouds
