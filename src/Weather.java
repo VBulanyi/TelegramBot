@@ -1,18 +1,32 @@
-import netscape.javascript.JSObject;
+import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
 public class Weather {
 
-    public static String getWeather(String message, Model model) throws IOException {
+    public static String getWeather(String location, Model model) throws IOException {
 
-        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + message + "&units=metric&appid=886705b4c1182eb1c69f28eb8c520e20");
+        System.out.println(location);
+
+        //exp. Location{longitude=30.43329, latitude=59.966244}
+
+
+        String tmp = null;
+        String longitude = location.substring(location.indexOf("="), location.indexOf(","));
+
+        String latitude = location.substring(location.indexOf("latitude="));
+
+        tmp = latitude.substring(latitude.indexOf("="), latitude.indexOf("}"));
+        latitude = tmp;
+
+
+        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?lat" + latitude + "&lon" + longitude +"&units=metric&appid=e43d516a21ac849b44e97a4381ce5c9a");
 
         Scanner in = new Scanner((InputStream) url.getContent());
         String result = " ";

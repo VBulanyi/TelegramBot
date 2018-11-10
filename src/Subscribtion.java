@@ -1,19 +1,19 @@
-import org.telegram.telegrambots.meta.api.objects.Message;
-
 public class Subscribtion {
 
-    public String  id;
-    public String message;
+    public Long chatId;
+    public String location;
 
-    public Subscribtion(String  id, String message) {
-       this.id = id;
-//       message = update.getMessage();
-        this.message = message;
+    public Subscribtion(Long chatId, String location) {
+
+        this.chatId = chatId;
+        this.location = location;
+//        this.idCity = idCity;
+
     }
 
     @Override
-    public String toString(){
-            return String.format("ID: %s| Message: %s" );
+    public String toString() {
+        return String.format("chatId: %s| location: %s");
 
     }
 }

@@ -11,17 +11,16 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 
 public class Bot extends TelegramLongPollingBot {
+    Map<Long, Boolean> sub = new HashMap<>();
 
 
     public static void main(String[] args) {
 
         System.getProperties().put("proxySet", "true");
-        System.getProperties().put("socksProxyHost", "74.115.25.72");
+        System.getProperties().put("socksProxyHost", "185.81.43.40");
         System.getProperties().put("socksProxyPort", "1080");
 
         ApiContextInitializer.init();
@@ -40,10 +39,58 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         Model model = new Model();
 
-        Message message = update.getMessage();
-        if (message != null && message.hasText()) {
-            switch (message.getText()) {
 
+        Message message = update.getMessage();
+
+        if (message != null && message.hasLocation()) {
+            for (Long key : sub.keySet()) {
+                System.out.println(key);
+            }
+
+            if (sub.containsKey(message.getChatId())
+            ) {
+                try {
+                    DbHandler dbHandler = DbHandler.getInstance();
+                    dbHandler.addSubscribtion(new Subscribtion(message.getChatId(), message.getLocation().toString()));
+                    sub.remove(message.getChatId());
+                    System.out.println("done");
+
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+
+                }
+            } else try {
+                sendMsg(message, Weather.getWeather(message.getLocation().toString(), model));
+                System.out.println(message.getLocation().toString());
+
+
+            } catch (IOException e) {
+                sendMsg(message, "Город не найден");
+            }
+        }
+
+
+        if (message != null && message.hasText()) {
+            if (message.getText().contains("/subscribe")) {
+
+                sub.put(message.getChatId(), null);
+                for (Long key : sub.keySet()) {
+                    System.out.println(key);
+                }
+
+                sendMsg(message, "Отправьте геолокацию");
+
+            }
+        }
+    }
+
+
+/*
+
+
+
+/*
 //                case "unsubscribe":
 //                    sendMsg(message, "От какого города отписаться?");
 //                    break;
@@ -56,42 +103,76 @@ public class Bot extends TelegramLongPollingBot {
 //    }
 //}
 
-                case "subscribe":
-                    sendMsg(message, "Введите город!");
+
+//
+//                    // НЕ ПОЛУЧАЕТ id ГОРОДА!!!
+//                    model.getId();
+
+                    //   System.out.println(message.getText().substring(4));
+                    System.out.println(message.getChatId().toString());
+
+                    DbHandler dbHandler = DbHandler.getInstance();
+                    dbHandler.addSubscribtion(new Subscribtion(message.getChatId().toString(), message.getLocation().toString()));
+
+                    sendMsg(message, "Вы подписаны");
 
 
-                    //
-                    try {
-                        message.getText();
-                        DbHandler dbHandler = DbHandler.getInstance();
-                        dbHandler.addSubscribtion(new Subscribtion(message.getChatId().toString(), update.getMessage().toString()));
-                            List<Subscribtion> subscribtions = dbHandler.getAllSubscribtions();
-                            for(Subscribtion subscribtion : subscribtions) {
-                               try {
-                                   sendMsg(message, Weather.getWeather(message.getText(), model));
-
-                               }
-                               catch (Exception e){
-                                   e.printStackTrace();
-                               }
-                            }
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-
-
-                    break;
+//                    List<Subscribtion> subscribtions = dbHandler.getAllSubscribtions();
+//                    for (Subscribtion subscribtion : subscribtions) {
+//                            try {
+//                                sendMsg(message, Weather.getWeather(message.getText(), model));
+//
+//                            }
+//                            catch (Exception e){
+//                                e.printStackTrace();
+//                            }
+//                    }
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    sendMsg(message, "ОШИБКА!!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    sendMsg(message, "ОШИБКА!!");
+                }
 
 
-                default:
-                    try {
-                        sendMsg(message, Weather.getWeather(message.getText(), model));
-                    } catch (IOException e) {
-                        sendMsg(message, "Город не найден");
-                    }
             }
-        }
-    }
+            else if((message.getText().startsWith("remove"))) {
+
+
+                try {
+
+                    Weather.getWeather((Location) message.getLocation(), model);
+
+
+
+                    System.out.println(message.getText().substring(6));
+//                    System.out.println(model.toString());
+                    System.out.println(message.getChatId().toString());
+
+
+
+
+                    // НЕ ПОЛУЧАЕТ id ГОРОДА!!!
+                    //
+//
+                    DbHandler dbHandler = DbHandler.getInstance();
+                    dbHandler.deleteSubscribtion(message.getChatId().toString(), (Location) message.getLocation());
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    sendMsg(message, "ОШИБКА!!");
+                }
+
+            }
+            else
+       */
+
+
+
 
 
     //Клавиатура
@@ -109,8 +190,9 @@ public class Bot extends TelegramLongPollingBot {
 //Первый ряд кнопок
         KeyboardRow keyboardFirstRow = new KeyboardRow();
 
-        keyboardFirstRow.add(new KeyboardButton("subscribe"));
+        keyboardFirstRow.add(new KeyboardButton("/subscribe"));
         keyboardFirstRow.add(new KeyboardButton("unsubscribe"));
+
 // Добавить кнопки в список клавиатуры
         keyboardRowList.add(keyboardFirstRow);
         replyKeyboardMarkup.setKeyboard(keyboardRowList);
@@ -134,6 +216,7 @@ public class Bot extends TelegramLongPollingBot {
         }
 
     }
+
 
     @Override
     public String getBotUsername() {
