@@ -44,7 +44,7 @@ public class Bot extends TelegramLongPollingBot {
 
         if (message != null && message.hasLocation()) {
             for (Long key : sub.keySet()) {
-                System.out.println(key);
+//                System.out.println(key);
             }
 
             if (sub.containsKey(message.getChatId())
@@ -53,7 +53,7 @@ public class Bot extends TelegramLongPollingBot {
                     DbHandler dbHandler = DbHandler.getInstance();
                     dbHandler.addSubscribtion(new Subscribtion(message.getChatId(), message.getLocation().toString()));
                     sub.remove(message.getChatId());
-                    System.out.println("done");
+//                    System.out.println("done");
 
 
                 } catch (SQLException e) {
@@ -62,7 +62,7 @@ public class Bot extends TelegramLongPollingBot {
                 }
             } else try {
                 sendMsg(message, Weather.getWeather(message.getLocation().toString(), model));
-                System.out.println(message.getLocation().toString());
+//                System.out.println(message.getLocation().toString());
 
 
             } catch (IOException e) {

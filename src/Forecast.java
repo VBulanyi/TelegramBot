@@ -12,7 +12,7 @@ public class Forecast {
 
     public static String getForecast(String location, Model model) throws IOException {
 
-        System.out.println(location);
+//        System.out.println(location);
 
         //exp. Location{longitude=30.43329, latitude=59.966244}
 
