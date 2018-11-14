@@ -23,39 +23,46 @@ import static sun.misc.PostVMInitHook.run;
 public class Bot extends TelegramLongPollingBot {
     Map<Long, Boolean> sub = new HashMap<>();
 
-    public static void runSub() {
+    private static void runSub() {
 
         Thread thread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
 
 
-            Model model = new Model();
+                Model model = new Model();
 
 
-            {
-                DbHandler handler = null;
-                try {
-                    handler = DbHandler.getInstance();
-                } catch (SQLException e1) {
-                    e1.printStackTrace();
-                }
-                HashMap<Long, String> subscribtions = handler.getAllSubscribtions();
-                for (Map.Entry<Long, String> pair : subscribtions.entrySet()) {
-                    Long chatId = pair.getKey();
-                    String location = pair.getValue();
-
+                {
+                    DbHandler handler = null;
                     try {
-                        sendMsg(chatId, Weather.getWeather(location, model));
-                    } catch (IOException e1) {
+                        handler = DbHandler.getInstance();
+                    } catch (SQLException e1) {
                         e1.printStackTrace();
+                    }
+                    HashMap<Long, String> subscribtions = handler.getAllSubscribtions();
+                    for (Map.Entry<Long, String> pair : subscribtions.entrySet()) {
+                        Long chatId = pair.getKey();
+                        String location = pair.getValue();
+
+                        System.out.println(pair.getKey());
+                        System.out.println(pair.getValue());
+
+                        try {
+
+                            sendMsg(chatId, Weather.getWeather(location, model));
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
                     }
                 }
             }
+        };thread.start();
+}
 
 
-        };
-        start();
 
-    }
 
 
     public static void main(String[] args) {
@@ -249,14 +256,19 @@ public class Bot extends TelegramLongPollingBot {
 
     }
 
-    private static void sendMsg(Long chatID, String text) {
+    private  void sendMsg(Long chatID, String text) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
-
-        //????????????????
         sendMessage.setChatId(chatID);
 //        sendMessage.setReplyToMessageId(message.getMessageId());
         sendMessage.setText(text);
+        try {
+            //Добавить клавиатуру к отправке сообщений
+            setButtons(sendMessage);
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void sendMsg(Message message, String text) {
