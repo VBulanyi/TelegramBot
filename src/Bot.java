@@ -1,3 +1,5 @@
+import javafx.concurrent.Task;
+import jdk.internal.org.objectweb.asm.tree.analysis.Value;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -8,19 +10,58 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.meta.logging.BotLogger;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 
+
+import static com.google.common.collect.ComparisonChain.start;
+import static sun.misc.PostVMInitHook.run;
+
 public class Bot extends TelegramLongPollingBot {
     Map<Long, Boolean> sub = new HashMap<>();
+
+    public static void runSub() {
+
+        Thread thread = new Thread() {
+
+
+            Model model = new Model();
+
+
+            {
+                DbHandler handler = null;
+                try {
+                    handler = DbHandler.getInstance();
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+                HashMap<Long, String> subscribtions = handler.getAllSubscribtions();
+                for (Map.Entry<Long, String> pair : subscribtions.entrySet()) {
+                    Long chatId = pair.getKey();
+                    String location = pair.getValue();
+
+                    try {
+                        sendMsg(chatId, Weather.getWeather(location, model));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+
+
+        };
+        start();
+
+    }
 
 
     public static void main(String[] args) {
 
         System.getProperties().put("proxySet", "true");
-        System.getProperties().put("socksProxyHost", "185.81.43.40");
+        System.getProperties().put("socksProxyHost", "5.56.133.122");
         System.getProperties().put("socksProxyPort", "1080");
 
         ApiContextInitializer.init();
@@ -31,8 +72,17 @@ public class Bot extends TelegramLongPollingBot {
             telegramBotsApi.registerBot(new Bot());
         } catch (TelegramApiException e) {
             e.printStackTrace();
+
+
         }
+        runSub();
+//        Timer timer = new Timer();
+//        timer.schedule(new Task(), 10000);
     }
+
+
+//    TimerTask task = new TimerTask() {
+//        public void run() {
 
 
     @Override
@@ -41,6 +91,7 @@ public class Bot extends TelegramLongPollingBot {
 
 
         Message message = update.getMessage();
+        System.out.println(message.getMessageId());
 
         if (message != null && message.hasLocation()) {
             for (Long key : sub.keySet()) {
@@ -54,6 +105,7 @@ public class Bot extends TelegramLongPollingBot {
                     dbHandler.addSubscribtion(new Subscribtion(message.getChatId(), message.getLocation().toString()));
                     sub.remove(message.getChatId());
 //                    System.out.println("done");
+                    sendMsg(message, "Вы подписаны на ежедневный прогноз погоды");
 
 
                 } catch (SQLException e) {
@@ -172,9 +224,6 @@ public class Bot extends TelegramLongPollingBot {
        */
 
 
-
-
-
     //Клавиатура
     private void setButtons(SendMessage sendMessage) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
@@ -200,6 +249,15 @@ public class Bot extends TelegramLongPollingBot {
 
     }
 
+    private static void sendMsg(Long chatID, String text) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableMarkdown(true);
+
+        //????????????????
+        sendMessage.setChatId(chatID);
+//        sendMessage.setReplyToMessageId(message.getMessageId());
+        sendMessage.setText(text);
+    }
 
     private void sendMsg(Message message, String text) {
         SendMessage sendMessage = new SendMessage();

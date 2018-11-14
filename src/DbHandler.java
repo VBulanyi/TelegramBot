@@ -2,6 +2,7 @@ import org.sqlite.JDBC;
 import sun.plugin2.message.Message;
 
 import javax.xml.stream.Location;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -18,38 +19,41 @@ public class DbHandler {
         return instance;
 
     }
+// Подключение к БД
 
     private Connection connection;
 
-    private DbHandler() throws SQLException {
+    public DbHandler() throws SQLException {
         DriverManager.registerDriver(new JDBC());
         this.connection = DriverManager.getConnection(CON_STR);
     }
 
-    public List<Subscribtion> getAllSubscribtions() {
+    // Получение данных из БД
+
+    public HashMap<Long, String> getAllSubscribtions() {
 
 
         try (Statement statement = this.connection.createStatement()) {
 
-            List<Subscribtion> subscribtions = new ArrayList<>();
+            HashMap<Long, String> subscribtions = new HashMap<>();
 
             ResultSet resultSet = statement.executeQuery("SELECT chatId , location FROM Subscribtions");
 
             while (resultSet.next()) {
-                subscribtions.add(new Subscribtion(
+                subscribtions.put(
                         resultSet.getLong("chatId"),
-                        resultSet.getString("location")));
+                        resultSet.getString("location"));
 //                        resultSet.getString("idCity")));
             }
 
             return subscribtions;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
-            // Если произошла ошибка - возвращаем пустую коллекцию
-            return Collections.emptyList();
+
+            return null;
+            }
         }
-    }
+
 
     // Добавление подписки в БД
     public void addSubscribtion(Subscribtion subscribtion) {
